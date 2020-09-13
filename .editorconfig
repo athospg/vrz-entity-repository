@@ -1,0 +1,29 @@
+# Schema: http://EditorConfig.org
+# Docs: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
+
+# top-most EditorConfig file
+root = true
+
+# Don't use tabs for indentation.
+[*]
+indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
+guidelines = 140
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# Powershell files
+[*.ps1]
+indent_size = 2
+
+# Shell scripts
+[*.sh]
+end_of_line = lf
+indent_size = 2
+
+[*.{cmd,bat}]
+end_of_line = crlf
+indent_size = 2

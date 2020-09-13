@@ -1,0 +1,2 @@
+# Defina o comportamento padrão, caso as pessoas não tenham configurado o core.autocrlf.
+* text=auto

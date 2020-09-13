@@ -1,0 +1,13 @@
+{
+  "dotnet-test-explorer.testProjectPath": "**/*Tests.*.csproj",
+  "cSpell.words": [
+    "ASPNETCORE",
+    "Affero",
+    "Npgsql",
+    "OPTOUT",
+    "Xunit",
+    "mkdir",
+    "nuget",
+    "postgresql"
+  ]
+}

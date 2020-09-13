@@ -1,0 +1,59 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "test watch",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "--project",
+        "VRZ-EntityRepository.sln",
+        "test",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "/p:CollectCoverage=true",
+        "/p:CoverletOutputFormat=lcov",
+        "/p:CoverletOutput=./lcov.info"
+      ],
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/Solution"
+      }
+    },
+    {
+      "label": "test",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "VRZ-EntityRepository.sln",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "--collect:\"XPlat Code Coverage\"",
+        "--settings",
+        "testsettings.xml"
+      ],
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/Solution"
+      }
+    },
+    {
+      "label": "coverage",
+      "command": "reportgenerator",
+      "type": "process",
+      "args": [
+        "-reports:**/coverage.cobertura.xml",
+        "-targetdir:Tests",
+        "-reporttypes:Html;HtmlChart;lcov",
+        "-historydir:Tests/History"
+      ],
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": ["test"]
+    }
+  ]
+}
