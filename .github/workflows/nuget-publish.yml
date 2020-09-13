@@ -1,0 +1,50 @@
+name: Nuget Publish
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Solution
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.100-preview.8.20417.9
+
+      - name: Set tag version
+        id: tag
+        run: |
+          chmod +x ./../git-revision.sh
+          echo "::set-output name=tag::$(./../git-revision.sh)"
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build VRZ.EntityRepository.SDK/VRZ.EntityRepository.SDK.csproj --no-restore --configuration Release -o=out -p:Version=${{ steps.tag.outputs.tag }}
+
+      - name: Upload package
+        run: dotnet nuget push out/VRZ.EntityRepository.SDK.${{ steps.tag.outputs.tag }}.nupkg -k ${{ secrets.NUGET_KEY }} -s https://api.nuget.org/v3/index.json
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          release_name: Release ${{ steps.tag.outputs.tag }}
+          body: |
+            Release ${{ steps.tag.outputs.tag }}
+          draft: false
+          prerelease: false
