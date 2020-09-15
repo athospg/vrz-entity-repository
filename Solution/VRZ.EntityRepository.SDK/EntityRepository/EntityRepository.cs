@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -94,7 +93,7 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
             return await query.SingleOrDefaultAsync(expressionTree);
         }
 
-        public async Task<IEnumerable<TEntity>> FindAll(bool asNoTracking)
+        public async Task<IEnumerable<TEntity>> FindAll(bool asNoTracking = true)
         {
             var query = asNoTracking
                 ? Context.Set<TEntity>().AsNoTracking()
@@ -103,7 +102,8 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate, bool asNoTracking)
+        public async Task<IEnumerable<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate,
+            bool asNoTracking = true)
         {
             var query = asNoTracking
                 ? Context.Set<TEntity>().AsNoTracking()
@@ -114,7 +114,7 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<TEntity>> FindAllIncluding(bool asNoTracking,
+        public async Task<IEnumerable<TEntity>> FindAllIncluding(bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties)
         {
             var query = asNoTracking
@@ -128,11 +128,11 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
         }
 
         public async Task<IEnumerable<TEntity>> FindAllIncluding(Expression<Func<TEntity, bool>> predicate,
-            bool asNoTracking, params Expression<Func<TEntity, object>>[] includeProperties)
+            bool asNoTracking = true, params Expression<Func<TEntity, object>>[] includeProperties)
         {
             var query = asNoTracking
-                    ? Context.Set<TEntity>().AsNoTracking()
-                    : Context.Set<TEntity>();
+                ? Context.Set<TEntity>().AsNoTracking()
+                : Context.Set<TEntity>();
 
             query = query.Where(predicate);
 
@@ -142,7 +142,8 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
             return await query.ToListAsync();
         }
 
-        public async ValueTask<TEntity> FirstOrDefault(Expression<Func<TEntity, bool>> predicate, bool asNoTracking)
+        public async ValueTask<TEntity> FirstOrDefault(Expression<Func<TEntity, bool>> predicate,
+            bool asNoTracking = true)
         {
             var query = asNoTracking
                 ? Context.Set<TEntity>().AsNoTracking()
@@ -215,23 +216,10 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
 
         private static IEnumerable<PropertyInfo> GetCollectionsInfo()
         {
-            var collectionProperties = new List<PropertyInfo>();
-            foreach (var info in GetProperties.Where(x => x.PropertyType != typeof(string)))
-            {
-                if ((info.GetCustomAttribute(typeof(DescriptionAttribute), false) is DescriptionAttribute attribute &&
-                     attribute.Description.ToLower() == "ignore") ||
-                    info.GetCustomAttribute(typeof(JsonIgnoreAttribute), false) is JsonIgnoreAttribute ||
-                    info.GetCustomAttribute(typeof(Newtonsoft.Json.JsonIgnoreAttribute), false) is Newtonsoft.Json
-                        .JsonIgnoreAttribute)
-                {
-                    continue;
-                }
-
-                if (info.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
-                    collectionProperties.Add(info);
-            }
-
-            return collectionProperties;
+            return GetProperties
+                .Where(x => x.PropertyType != typeof(string) &&
+                            x.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)) &&
+                            x.GetCustomAttribute(typeof(NotMappedAttribute), false) is not NotMappedAttribute);
         }
 
         private static void MapChildrenEntities(TEntity entity)
