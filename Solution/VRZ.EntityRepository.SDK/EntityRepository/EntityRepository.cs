@@ -56,32 +56,7 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
         public async ValueTask<TEntity> FindIncluding(TKey key, bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
-            var entityType = Context.Model.FindEntityType(typeof(TEntity));
-
-            var primaryKeyName = entityType.FindPrimaryKey().Properties.Select(p => p.Name).FirstOrDefault();
-            var primaryKeyType = entityType.FindPrimaryKey().Properties.Select(p => p.ClrType).FirstOrDefault();
-
-            if (primaryKeyName == null || primaryKeyType == null)
-                throw new ArgumentException("Entity does not have any primary key defined", nameof(key));
-
-            object primaryKeyValue;
-            try
-            {
-                primaryKeyValue = Convert.ChangeType(key, primaryKeyType, CultureInfo.InvariantCulture);
-            }
-            catch (Exception)
-            {
-                throw new ArgumentException($"Cannot assign type {key.GetType()} to a property of type {primaryKeyType}");
-            }
-
-            var pe = Expression.Parameter(typeof(TEntity), "entity");
-            var me = Expression.Property(pe, primaryKeyName);
-            var constant = Expression.Constant(primaryKeyValue, primaryKeyType);
-            var body = Expression.Equal(me, constant);
-            var expressionTree = Expression.Lambda<Func<TEntity, bool>>(body, pe);
+            var expressionTree = GetKeyEqualsExpression(key);
 
             var query = asNoTracking
                 ? Context.Set<TEntity>().AsNoTracking()
@@ -206,6 +181,43 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
             var entity = await Context.Set<TEntity>().FindAsync(key);
             Context.Set<TEntity>().Remove(entity);
             return await Context.SaveChangesAsync();
+        }
+
+        #endregion
+
+        #region Utilities
+
+        public Expression<Func<TEntity, bool>> GetKeyEqualsExpression(TKey key)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            var entityType = Context.Model.FindEntityType(typeof(TEntity));
+
+            var primaryKeyName = entityType.FindPrimaryKey().Properties.Select(p => p.Name).FirstOrDefault();
+            var primaryKeyType = entityType.FindPrimaryKey().Properties.Select(p => p.ClrType).FirstOrDefault();
+
+            if (primaryKeyName == null || primaryKeyType == null)
+                throw new ArgumentException("Entity does not have any primary key defined", typeof(TEntity).Name);
+
+            object primaryKeyValue;
+            try
+            {
+                primaryKeyValue = Convert.ChangeType(key, primaryKeyType, CultureInfo.InvariantCulture);
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException($"Cannot assign type {key.GetType()} to type {primaryKeyType}",
+                    typeof(TEntity).Name);
+            }
+
+            var pe = Expression.Parameter(typeof(TEntity), "entity");
+            var me = Expression.Property(pe, primaryKeyName);
+            var constant = Expression.Constant(primaryKeyValue, primaryKeyType);
+            var body = Expression.Equal(me, constant);
+            var expressionTree = Expression.Lambda<Func<TEntity, bool>>(body, pe);
+
+            return expressionTree;
         }
 
         #endregion
