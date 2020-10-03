@@ -11,9 +11,9 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities.Mode
 
         [JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
-        public ICollection<Post> Posts { get; set; } = new List<Post>();
+        public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
 
-        public ICollection<Tag> Tags { get; set; } = new List<Tag>();
+        public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
 
         public bool Equals(Blog other)
         {

@@ -9,10 +9,10 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities.Mode
 
         [JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
-        public ICollection<Blog> Blogs { get; set; } = new List<Blog>();
+        public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
 
         [JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
-        public ICollection<Post> Posts { get; set; } = new List<Post>();
+        public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
     }
 }

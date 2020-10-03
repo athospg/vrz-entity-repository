@@ -163,29 +163,66 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 
 
         [Fact]
-        public async Task Edit_Blog()
+        public async Task Change_Name()
         {
             // Arrange
-            var context = GetNewContext("Edit_Blog");
-            try
-            {
-                var blogsRepository = new EntityRepository<Blog>(context);
-                var blog = await blogsRepository.Find(1);
-                blog.Name += " Modified";
+            await using var context = GetNewContext("Change_Name");
+            var blogsRepository = new EntityRepository<Blog>(context);
 
-                // Act
-                var count = await blogsRepository.Update(blog);
+            var blog = await blogsRepository.Find(1);
+            blog.Name += " Modified";
 
-                // Assert
-                var modifiedBlog = await blogsRepository.Find(1);
+            // Act
+            var count = await blogsRepository.Update(blog);
 
-                Assert.Equal(1, count);
-                Assert.Equal("A1 Modified", modifiedBlog.Name);
-            }
-            finally
-            {
-                await context.DisposeAsync();
-            }
+            // Assert
+            var modifiedBlog = await blogsRepository.Find(1);
+
+            Assert.Equal(1, count);
+            Assert.Equal("A1 Modified", modifiedBlog.Name);
+        }
+
+        [Fact]
+        public async Task Add_Tag()
+        {
+            // Arrange
+            await using var context = GetNewContext("Add_Tag");
+            var blogsRepository = new EntityRepository<Blog>(context);
+
+            var blog = await blogsRepository.Find(1);
+
+            // Act
+            blog.Tags.Add(new Tag { Name = "New Tag" });
+            var count = await blogsRepository.Update(blog);
+
+            // Assert
+            var modifiedBlog = await blogsRepository.Find(1);
+
+            Assert.Equal(2, count);
+            Assert.Equal(4, modifiedBlog.Tags.Count);
+            Assert.Contains("New Tag", modifiedBlog.Tags.Select(x => x.Name));
+        }
+
+        [Fact]
+        public async Task Remove_Tag()
+        {
+            // Arrange
+            await using var context = GetNewContext("Remove_Tag");
+            var blogsRepository = new EntityRepository<Blog>(context);
+
+            var blog = await blogsRepository.Find(1);
+            var tag = blog.Tags.FirstOrDefault(x => x.Name == "T5");
+
+            // Act
+            blog.Tags.Remove(tag);
+            var count = await blogsRepository.Update(blog);
+
+            // Assert
+            var modifiedBlog = await blogsRepository.Find(1);
+
+            Assert.Equal(1, count);
+            Assert.Equal(2, modifiedBlog.Tags.Count);
+            Assert.DoesNotContain("T5", modifiedBlog.Tags.Select(x => x.Name));
         }
     }
 }
