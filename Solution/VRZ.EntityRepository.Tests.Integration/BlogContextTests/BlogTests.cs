@@ -173,12 +173,12 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
             blog.Name += " Modified";
 
             // Act
-            var count = await blogsRepository.Update(blog);
+            var updatedBlog = await blogsRepository.Update(blog);
 
             // Assert
             var modifiedBlog = await blogsRepository.Find(1);
 
-            Assert.Equal(1, count);
+            Assert.NotNull(updatedBlog);
             Assert.Equal("A1 Modified", modifiedBlog.Name);
         }
 
@@ -193,12 +193,12 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 
             // Act
             blog.Tags.Add(new Tag { Name = "New Tag" });
-            var count = await blogsRepository.Update(blog);
+            var updatedBlog = await blogsRepository.Update(blog);
 
             // Assert
             var modifiedBlog = await blogsRepository.Find(1);
 
-            Assert.Equal(2, count);
+            Assert.NotNull(updatedBlog);
             Assert.Equal(4, modifiedBlog.Tags.Count);
             Assert.Contains("New Tag", modifiedBlog.Tags.Select(x => x.Name));
         }
@@ -215,12 +215,12 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 
             // Act
             blog.Tags.Remove(tag);
-            var count = await blogsRepository.Update(blog);
+            var updatedBlog = await blogsRepository.Update(blog);
 
             // Assert
             var modifiedBlog = await blogsRepository.Find(1);
 
-            Assert.Equal(1, count);
+            Assert.NotNull(updatedBlog);
             Assert.Equal(2, modifiedBlog.Tags.Count);
             Assert.DoesNotContain("T5", modifiedBlog.Tags.Select(x => x.Name));
         }

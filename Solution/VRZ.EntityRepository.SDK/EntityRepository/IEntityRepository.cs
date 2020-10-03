@@ -33,10 +33,10 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
 
         Task<TEntity> Add(TEntity entity);
         Task<IEnumerable<TEntity>> Add(IEnumerable<TEntity> entities);
-        Task<int> Update(TEntity entity);
-        Task<int> Update(IEnumerable<TEntity> entity);
-        Task<int> Remove(TEntity entity);
-        Task<int> Remove(TKey key);
+        Task<TEntity> Update(TEntity entity);
+        Task<IEnumerable<TEntity>> Update(IEnumerable<TEntity> entity);
+        Task<TEntity> Remove(TEntity entity);
+        Task<TEntity> Remove(TKey key);
 
         #endregion
 
