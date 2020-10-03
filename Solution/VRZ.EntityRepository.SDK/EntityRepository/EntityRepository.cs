@@ -147,17 +147,17 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
             return entities;
         }
 
-        public virtual async Task<int> Update(TEntity entity)
+        public virtual async Task<TEntity> Update(TEntity entity)
         {
             var dbEntity = await Find(GetKey(entity));
 
             MapChildrenEntities(entity, dbEntity);
             Context.Entry(dbEntity).CurrentValues.SetValues(entity);
 
-            return await Context.SaveChangesAsync();
+            return await Context.SaveChangesAsync() > 0 ? dbEntity : null;
         }
 
-        public virtual async Task<int> Update(IEnumerable<TEntity> entities)
+        public virtual async Task<IEnumerable<TEntity>> Update(IEnumerable<TEntity> entities)
         {
             foreach (var entity in entities)
             {
@@ -167,20 +167,20 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
                 Context.Entry(dbEntity).CurrentValues.SetValues(entity);
             }
 
-            return await Context.SaveChangesAsync();
+            return await Context.SaveChangesAsync() > 0 ? entities : null;
         }
 
-        public virtual Task<int> Remove(TEntity entity)
+        public virtual async Task<TEntity> Remove(TEntity entity)
         {
             Context.Set<TEntity>().Remove(entity);
-            return Context.SaveChangesAsync();
+            return await Context.SaveChangesAsync() > 0 ? entity : null;
         }
 
-        public virtual async Task<int> Remove(TKey key)
+        public virtual async Task<TEntity> Remove(TKey key)
         {
             var entity = await Context.Set<TEntity>().FindAsync(key);
             Context.Set<TEntity>().Remove(entity);
-            return await Context.SaveChangesAsync();
+            return await Context.SaveChangesAsync() > 0 ? entity : null;
         }
 
         #endregion
