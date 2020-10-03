@@ -56,32 +56,7 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
         public async ValueTask<TEntity> FindIncluding(TKey key, bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
-            var entityType = Context.Model.FindEntityType(typeof(TEntity));
-
-            var primaryKeyName = entityType.FindPrimaryKey().Properties.Select(p => p.Name).FirstOrDefault();
-            var primaryKeyType = entityType.FindPrimaryKey().Properties.Select(p => p.ClrType).FirstOrDefault();
-
-            if (primaryKeyName == null || primaryKeyType == null)
-                throw new ArgumentException("Entity does not have any primary key defined", nameof(key));
-
-            object primaryKeyValue;
-            try
-            {
-                primaryKeyValue = Convert.ChangeType(key, primaryKeyType, CultureInfo.InvariantCulture);
-            }
-            catch (Exception)
-            {
-                throw new ArgumentException($"Cannot assign type {key.GetType()} to a property of type {primaryKeyType}");
-            }
-
-            var pe = Expression.Parameter(typeof(TEntity), "entity");
-            var me = Expression.Property(pe, primaryKeyName);
-            var constant = Expression.Constant(primaryKeyValue, primaryKeyType);
-            var body = Expression.Equal(me, constant);
-            var expressionTree = Expression.Lambda<Func<TEntity, bool>>(body, pe);
+            var expressionTree = GetKeyEqualsExpression(key);
 
             var query = asNoTracking
                 ? Context.Set<TEntity>().AsNoTracking()
@@ -158,8 +133,6 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
 
         public virtual async Task<TEntity> Add(TEntity entity)
         {
-            MapChildrenEntities(entity);
-
             await Context.Set<TEntity>().AddAsync(entity);
             await Context.SaveChangesAsync();
 
@@ -168,11 +141,6 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
 
         public virtual async Task<IEnumerable<TEntity>> Add(IEnumerable<TEntity> entities)
         {
-            foreach (var entity in entities)
-            {
-                MapChildrenEntities(entity);
-            }
-
             await Context.Set<TEntity>().AddRangeAsync(entities);
             await Context.SaveChangesAsync();
 
@@ -181,7 +149,11 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
 
         public virtual async Task<int> Update(TEntity entity)
         {
-            Context.Entry(entity).State = EntityState.Modified;
+            var dbEntity = await Find(GetKey(entity));
+
+            MapChildrenEntities(entity, dbEntity);
+            Context.Entry(dbEntity).CurrentValues.SetValues(entity);
+
             return await Context.SaveChangesAsync();
         }
 
@@ -189,7 +161,10 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
         {
             foreach (var entity in entities)
             {
-                Context.Entry(entity).State = EntityState.Modified;
+                var dbEntity = await Find(GetKey(entity));
+
+                MapChildrenEntities(entity, dbEntity);
+                Context.Entry(dbEntity).CurrentValues.SetValues(entity);
             }
 
             return await Context.SaveChangesAsync();
@@ -210,6 +185,56 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
 
         #endregion
 
+        #region Utilities
+
+        public virtual TKey GetKey(TEntity entity)
+        {
+            var primaryKeyName = GetPrimaryKeyName(out _);
+            return (TKey)entity.GetType().GetProperty(primaryKeyName)?.GetValue(entity, null);
+        }
+
+        public Expression<Func<TEntity, bool>> GetKeyEqualsExpression(TKey key)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            var primaryKeyName = GetPrimaryKeyName(out var primaryKeyType);
+
+            object primaryKeyValue;
+            try
+            {
+                primaryKeyValue = Convert.ChangeType(key, primaryKeyType, CultureInfo.InvariantCulture);
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException($"Cannot assign type {key.GetType()} to type {primaryKeyType}",
+                    typeof(TEntity).Name);
+            }
+
+            var pe = Expression.Parameter(typeof(TEntity), "entity");
+            var me = Expression.Property(pe, primaryKeyName);
+            var constant = Expression.Constant(primaryKeyValue, primaryKeyType);
+            var body = Expression.Equal(me, constant);
+            var expressionTree = Expression.Lambda<Func<TEntity, bool>>(body, pe);
+
+            return expressionTree;
+        }
+
+        private string GetPrimaryKeyName(out Type primaryKeyType)
+        {
+            var entityType = Context.Model.FindEntityType(typeof(TEntity));
+
+            var primaryKeyName = entityType.FindPrimaryKey().Properties.Select(p => p.Name).FirstOrDefault();
+            primaryKeyType = entityType.FindPrimaryKey().Properties.Select(p => p.ClrType).FirstOrDefault();
+
+            if (primaryKeyName == null || primaryKeyType == null)
+                throw new ArgumentException("Entity does not have any primary key defined", typeof(TEntity).Name);
+
+            return primaryKeyName;
+        }
+
+        #endregion
+
         #region Private Methods
 
         private static IEnumerable<PropertyInfo> GetProperties => typeof(TEntity).GetProperties();
@@ -222,9 +247,13 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
                             x.GetCustomAttribute(typeof(NotMappedAttribute), false) is not NotMappedAttribute);
         }
 
-        private static void MapChildrenEntities(TEntity entity)
+        private void MapChildrenEntities(TEntity entity, TEntity dbEntity)
         {
-            //TODO
+            foreach (var propertyInfo in GetCollectionsInfo())
+            {
+                var childEntities = (IEnumerable<object>)propertyInfo.GetValue(entity);
+                Context.Entry(dbEntity).Collection(propertyInfo.Name).CurrentValue = childEntities;
+            }
         }
 
         #endregion

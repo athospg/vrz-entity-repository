@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace VRZ.EntityRepository.SDK.EntityRepository
 {
-    public interface IEntityRepository<in TKey, TEntity>
+    public interface IEntityRepository<TKey, TEntity>
         where TKey : IComparable<TKey>
-        where TEntity : class
+        where TEntity : class, new()
     {
         #region Read Methods
 
@@ -37,6 +37,14 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
         Task<int> Update(IEnumerable<TEntity> entity);
         Task<int> Remove(TEntity entity);
         Task<int> Remove(TKey key);
+
+        #endregion
+
+        #region Utilities
+
+        TKey GetKey(TEntity entity);
+
+        Expression<Func<TEntity, bool>> GetKeyEqualsExpression(TKey key);
 
         #endregion
     }
