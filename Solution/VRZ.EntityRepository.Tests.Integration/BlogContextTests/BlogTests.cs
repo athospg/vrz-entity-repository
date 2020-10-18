@@ -204,11 +204,37 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
         }
 
         [Fact]
+        public async Task Add_ExistingTag()
+        {
+            // Arrange
+            await using var context = GetNewContext("Add_ExistingTag");
+            var blogsRepository = new EntityRepository<Blog>(context);
+            var tagsRepository = new EntityRepository<Tag>(context);
+
+            var blog = await blogsRepository.Find(1);
+            var tag = await tagsRepository.Find(1);
+
+            // Act
+            blog.Tags.Add(tag);
+            var updatedBlog = await blogsRepository.Update(blog);
+
+            // Assert
+            var modifiedBlog = await blogsRepository.Find(1);
+            var tags = await tagsRepository.FindAll();
+
+            Assert.NotNull(updatedBlog);
+            Assert.Equal(4, modifiedBlog.Tags.Count);
+            Assert.Contains("T1", modifiedBlog.Tags.Select(x => x.Name));
+            Assert.Equal(Utilities.Utilities.TagsCount, tags.Count());
+        }
+
+        [Fact]
         public async Task Remove_Tag()
         {
             // Arrange
             await using var context = GetNewContext("Remove_Tag");
             var blogsRepository = new EntityRepository<Blog>(context);
+            var tagRepository = new EntityRepository<Tag>(context);
 
             var blog = await blogsRepository.Find(1);
             var tag = blog.Tags.FirstOrDefault(x => x.Name == "T5");
@@ -219,10 +245,12 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 
             // Assert
             var modifiedBlog = await blogsRepository.Find(1);
+            var tagT5 = await tagRepository.FirstOrDefault(x => x.Name == "T5");
 
             Assert.NotNull(updatedBlog);
             Assert.Equal(2, modifiedBlog.Tags.Count);
             Assert.DoesNotContain("T5", modifiedBlog.Tags.Select(x => x.Name));
+            Assert.NotNull(tagT5);
         }
     }
 }
