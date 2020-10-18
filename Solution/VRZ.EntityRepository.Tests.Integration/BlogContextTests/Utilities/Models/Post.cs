@@ -24,9 +24,10 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities.Mode
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            return Date.Equals(other.Date) &&
+            return base.Equals(other) &&
+                   Date.Equals(other.Date) &&
                    string.Equals(Name, other.Name, StringComparison.InvariantCultureIgnoreCase) &&
-                   BlogId == other.BlogId && Equals(Blog, other.Blog) &&
+                   BlogId == other.BlogId &&
                    Equals(Tags, other.Tags);
         }
 
@@ -42,10 +43,10 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities.Mode
         public override int GetHashCode()
         {
             var hashCode = new HashCode();
+            hashCode.Add(base.GetHashCode());
             hashCode.Add(Date);
             hashCode.Add(Name, StringComparer.InvariantCultureIgnoreCase);
             hashCode.Add(BlogId);
-            hashCode.Add(Blog);
             hashCode.Add(Tags);
             return hashCode.ToHashCode();
         }

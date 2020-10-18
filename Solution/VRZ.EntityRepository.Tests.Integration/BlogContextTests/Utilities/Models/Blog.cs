@@ -21,14 +21,14 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities.Mode
             if (ReferenceEquals(this, other)) return true;
 
             return base.Equals(other) &&
-                   string.Equals(Name, other.Name, StringComparison.InvariantCultureIgnoreCase);
+                   string.Equals(Name, other.Name, StringComparison.InvariantCultureIgnoreCase) &&
+                   Equals(Posts, other.Posts) && Equals(Tags, other.Tags);
         }
 
         public override bool Equals(object obj)
         {
             if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
-
             if (obj.GetType() != GetType()) return false;
 
             return Equals((Blog)obj);
@@ -39,6 +39,8 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities.Mode
             var hashCode = new HashCode();
             hashCode.Add(base.GetHashCode());
             hashCode.Add(Name, StringComparer.InvariantCultureIgnoreCase);
+            hashCode.Add(Posts);
+            hashCode.Add(Tags);
             return hashCode.ToHashCode();
         }
     }
