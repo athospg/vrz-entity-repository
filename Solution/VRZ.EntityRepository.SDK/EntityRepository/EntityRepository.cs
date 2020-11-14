@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -18,7 +19,7 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
     {
         protected readonly TContext Context;
 
-        public EntityRepository(TContext context)
+        public EntityRepository([DisallowNull] TContext context)
         {
             Context = context;
         }
@@ -46,14 +47,14 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
                 .AnyAsync(predicate);
         }
 
-        public async ValueTask<TEntity> Find(TKey key)
+        public async ValueTask<TEntity> Find([DisallowNull] TKey key)
         {
             return key is Array keys
                 ? await Context.Set<TEntity>().FindAsync(keys.Cast<object>().ToArray())
                 : await Context.Set<TEntity>().FindAsync(key);
         }
 
-        public async ValueTask<TEntity> FindIncluding(TKey key, bool asNoTracking = true,
+        public async ValueTask<TEntity> FindIncluding([DisallowNull] TKey key, bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties)
         {
             var expressionTree = GetKeyEqualsExpression(key);
@@ -131,7 +132,7 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
 
         #region Write Methods
 
-        public virtual async Task<TEntity> Add(TEntity entity)
+        public virtual async Task<TEntity> Add([DisallowNull] TEntity entity)
         {
             await Context.Set<TEntity>().AddAsync(entity);
             await Context.SaveChangesAsync();
@@ -147,9 +148,9 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
             return entities;
         }
 
-        public virtual async Task<TEntity> Update(TEntity entity)
+        public virtual async Task<TEntity> Update([DisallowNull] TEntity entity)
         {
-            var dbEntity = await Find(GetKey(entity));
+            var dbEntity = await Find(GetPrimaryKeyValue(entity));
 
             MapChildrenEntities(entity, dbEntity);
             Context.Entry(dbEntity).CurrentValues.SetValues(entity);
@@ -161,7 +162,7 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
         {
             foreach (var entity in entities)
             {
-                var dbEntity = await Find(GetKey(entity));
+                var dbEntity = await Find(GetPrimaryKeyValue(entity));
 
                 MapChildrenEntities(entity, dbEntity);
                 Context.Entry(dbEntity).CurrentValues.SetValues(entity);
@@ -176,7 +177,7 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
             return await Context.SaveChangesAsync() > 0 ? entity : null;
         }
 
-        public virtual async Task<TEntity> Remove(TKey key)
+        public virtual async Task<TEntity> Remove([DisallowNull] TKey key)
         {
             var entity = await Context.Set<TEntity>().FindAsync(key);
             Context.Set<TEntity>().Remove(entity);
@@ -187,18 +188,31 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
 
         #region Utilities
 
-        public virtual TKey GetKey(TEntity entity)
+        public string GetPrimaryKeyNameAndType(out Type primaryKeyType)
         {
-            var primaryKeyName = GetPrimaryKeyName(out _);
+            var entityType = Context.Model.FindEntityType(typeof(TEntity));
+
+            var primaryKeyName = entityType.FindPrimaryKey().Properties.Select(p => p.Name).FirstOrDefault();
+            primaryKeyType = entityType.FindPrimaryKey().Properties.Select(p => p.ClrType).FirstOrDefault();
+
+            if (primaryKeyName == null || primaryKeyType == null)
+                throw new ArgumentException("Entity does not have any primary key defined", typeof(TEntity).Name);
+
+            return primaryKeyName;
+        }
+
+        public virtual TKey GetPrimaryKeyValue([DisallowNull] TEntity entity)
+        {
+            var primaryKeyName = GetPrimaryKeyNameAndType(out _);
             return (TKey)entity.GetType().GetProperty(primaryKeyName)?.GetValue(entity, null);
         }
 
-        public Expression<Func<TEntity, bool>> GetKeyEqualsExpression(TKey key)
+        public Expression<Func<TEntity, bool>> GetKeyEqualsExpression([DisallowNull] TKey key)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
-            var primaryKeyName = GetPrimaryKeyName(out var primaryKeyType);
+            var primaryKeyName = GetPrimaryKeyNameAndType(out var primaryKeyType);
 
             object primaryKeyValue;
             try
@@ -218,19 +232,6 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
             var expressionTree = Expression.Lambda<Func<TEntity, bool>>(body, pe);
 
             return expressionTree;
-        }
-
-        private string GetPrimaryKeyName(out Type primaryKeyType)
-        {
-            var entityType = Context.Model.FindEntityType(typeof(TEntity));
-
-            var primaryKeyName = entityType.FindPrimaryKey().Properties.Select(p => p.Name).FirstOrDefault();
-            primaryKeyType = entityType.FindPrimaryKey().Properties.Select(p => p.ClrType).FirstOrDefault();
-
-            if (primaryKeyName == null || primaryKeyType == null)
-                throw new ArgumentException("Entity does not have any primary key defined", typeof(TEntity).Name);
-
-            return primaryKeyName;
         }
 
         #endregion
