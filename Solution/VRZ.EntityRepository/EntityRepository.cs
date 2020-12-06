@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace VRZ.EntityRepository.SDK.EntityRepository
+namespace VRZ.EntityRepository
 {
     public class EntityRepository<TKey, TEntity, TContext> : IEntityRepository<TKey, TEntity>
         where TKey : IComparable<TKey>
