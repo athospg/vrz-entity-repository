@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <coverage version="1.0" date="2020-10-18_09-13-27" tag="">
-  <assembly name="VRZ.EntityRepository.SDK">
-    <class name="VRZ.EntityRepository.SDK.EntityRepository.EntityRepository`3" coveredlines="136" coverablelines="189" totallines="261" coveredbranches="34" totalbranches="96" />
+  <assembly name="VRZ.EntityRepository">
+    <class name="VRZ.EntityRepository.EntityRepository`3" coveredlines="136" coverablelines="189" totallines="261" coveredbranches="34" totalbranches="96" />
   </assembly>
 </coverage>

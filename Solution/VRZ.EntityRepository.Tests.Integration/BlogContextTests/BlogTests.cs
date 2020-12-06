@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using VRZ.EntityRepository.SDK.EntityRepository;
 using VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities;
 using VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities.Models;
 using Xunit;

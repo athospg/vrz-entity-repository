@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace VRZ.EntityRepository.SDK.EntityRepository
+namespace VRZ.EntityRepository
 {
     public interface IEntityRepository<TKey, TEntity>
         where TKey : IComparable<TKey>

@@ -32,10 +32,10 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build VRZ.EntityRepository.SDK/VRZ.EntityRepository.SDK.csproj --no-restore --configuration Release -o=out -p:Version=${{ steps.tag.outputs.tag }}
+        run: dotnet build VRZ.EntityRepository/VRZ.EntityRepository.csproj --no-restore --configuration Release -o=out -p:Version=${{ steps.tag.outputs.tag }}
 
       - name: Upload package
-        run: dotnet nuget push out/VRZ.EntityRepository.SDK.${{ steps.tag.outputs.tag }}.nupkg -k ${{ secrets.NUGET_KEY }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push out/VRZ.EntityRepository.${{ steps.tag.outputs.tag }}.nupkg -k ${{ secrets.NUGET_KEY }} -s https://api.nuget.org/v3/index.json
 
       - name: Create Release
         uses: actions/create-release@v1
