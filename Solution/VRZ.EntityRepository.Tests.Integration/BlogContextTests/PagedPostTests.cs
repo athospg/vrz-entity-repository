@@ -10,12 +10,12 @@ using Xunit;
 
 namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 {
-    public class GetPagedPostTests
+    public class GetPagedPostsTests
     {
         private readonly BlogContext _context;
         private readonly IEntityPagingRepository<long, Post> _postsRepository;
 
-        public GetPagedPostTests()
+        public GetPagedPostsTests()
         {
             _context = new BlogContext();
 
@@ -28,7 +28,7 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
             _postsRepository = new EntityPagingRepository<Post>(_context);
         }
 
-        ~GetPagedPostTests()
+        ~GetPagedPostsTests()
         {
             _context.Dispose();
         }
@@ -148,6 +148,70 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
         }
 
         [Fact]
+        public async Task Get_Posts_HasPreviousPage()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageNumber = 2,
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.True(posts.HasPrevious);
+        }
+
+        [Fact]
+        public async Task Get_Posts_DoNotHavePreviousPage()
+        {
+            // Arrange
+            var filter = new PagingFilter();
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.False(posts.HasPrevious);
+        }
+
+        [Fact]
+        public async Task Get_Posts_HasNextPage()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageNumber = 2,
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.True(posts.HasNext);
+        }
+
+        [Fact]
+        public async Task Get_Posts_DoNotHaveNextPage()
+        {
+            // Arrange
+            const int pageSize = 17;
+            var lastPage = (int)Math.Ceiling(Utilities.Utilities.PostsCount / (double)pageSize);
+            var filter = new PagingFilter
+            {
+                PageSize = pageSize,
+                PageNumber = lastPage,
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.False(posts.HasNext);
+        }
+
+        [Fact]
         public async Task Get_Posts_ResultCount()
         {
             // Arrange
@@ -241,7 +305,10 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
         public async Task Get_Posts_Including()
         {
             // Arrange
-            var filter = new PagingFilter();
+            var filter = new PagingFilter
+            {
+                OrderBy = nameof(Post.Name),
+            };
 
             // Act
             var posts = await _postsRepository.FindAllIncluding(filter, true, x => x.Tags);
@@ -300,6 +367,112 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 
             // Assert
             Assert.Equal(10, posts.Count);
+        }
+    }
+
+    public class GetPagedPostsContentTests
+    {
+        private readonly BlogContext _context;
+        private readonly IEntityPagingRepository<long, Post> _postsRepository;
+
+        public GetPagedPostsContentTests()
+        {
+            _context = new BlogContext();
+
+            _context.Database.OpenConnection();
+            _context.Database.EnsureDeleted();
+            _context.Database.EnsureCreated();
+
+            Utilities.Utilities.InitializeDbForTests(_context);
+
+            _postsRepository = new EntityPagingRepository<Post>(_context);
+        }
+
+        ~GetPagedPostsContentTests()
+        {
+            _context.Dispose();
+        }
+
+
+        [Fact]
+        public async Task Get_Posts_DefaultOrder()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageNumber = 2,
+                PageSize = 2,
+                Ascending = true,
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.Equal("Blog 01 Post 27", posts.First().Name);
+            Assert.Equal("Blog 01 Post 26", posts.Last().Name);
+        }
+
+
+        [Fact]
+        public async Task Get_Posts_CustomOrder()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageNumber = 2,
+                PageSize = 2,
+                OrderBy = nameof(Post.Name),
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.Equal("Blog 01 Post 03", posts.First().Name);
+            Assert.Equal("Blog 01 Post 04", posts.Last().Name);
+        }
+
+        [Fact]
+        public async Task Get_Posts_CustomOrder_Descending()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageNumber = 2,
+                PageSize = 2,
+                OrderBy = $"{nameof(Post.Name)} desc, {nameof(Post.Name)} asc, a$5@4H56agT, {nameof(Post.Id)} desc",
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.Equal("Blog 04 Post 08", posts.First().Name);
+            Assert.Equal("Blog 04 Post 07", posts.Last().Name);
+        }
+
+        [Fact]
+        public async Task Get_Posts_CustomOrder_MultipleProperties()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageSize = 8,
+                OrderBy = $"{nameof(Post.Date)}, {nameof(Post.Name)} asc",
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            var expected = new[]
+            {
+                "Blog 01 Post 01", "Blog 02 Post 01", "Blog 03 Post 01", "Blog 04 Post 01",
+                "Blog 01 Post 02", "Blog 02 Post 02", "Blog 03 Post 02", "Blog 04 Post 02",
+            };
+
+            Assert.Equal(expected, posts.Select(x => x.Name).ToList());
         }
     }
 }

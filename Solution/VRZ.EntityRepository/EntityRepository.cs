@@ -26,52 +26,60 @@ namespace VRZ.EntityRepository
 
         #region Read Methods
 
-        public async ValueTask<long> CountAll()
+        public virtual async ValueTask<long> CountAll()
         {
             return await Context.Set<TEntity>()
                 .AsNoTracking()
                 .LongCountAsync();
         }
 
-        public async ValueTask<long> CountWhere(Expression<Func<TEntity, bool>> predicate)
+        public virtual async ValueTask<long> CountWhere(Expression<Func<TEntity, bool>> predicate)
         {
             return await Context.Set<TEntity>()
                 .AsNoTracking()
                 .LongCountAsync(predicate);
         }
 
-        public async ValueTask<bool> Any(Expression<Func<TEntity, bool>> predicate)
+        public virtual async ValueTask<bool> Any(Expression<Func<TEntity, bool>> predicate)
         {
             return await Context.Set<TEntity>()
                 .AsNoTracking()
                 .AnyAsync(predicate);
         }
 
-        public async ValueTask<TEntity> Find([DisallowNull] TKey key)
+        public virtual async ValueTask<TEntity> Find([DisallowNull] TKey key)
         {
             return key is Array keys
                 ? await Context.Set<TEntity>().FindAsync(keys.Cast<object>().ToArray())
                 : await Context.Set<TEntity>().FindAsync(key);
         }
 
-        public async ValueTask<TEntity> FindIncluding([DisallowNull] TKey key, bool asNoTracking = true,
+        public virtual async ValueTask<TEntity> FindIncluding([DisallowNull] TKey key, bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties)
         {
             var expressionTree = GetKeyEqualsExpression(key);
 
-            var query = GetFindAllIncludingQueryable(asNoTracking, includeProperties);
+            var query = GetFindAllIncludingQueryable(expressionTree, asNoTracking, includeProperties);
 
-            return await query.SingleOrDefaultAsync(expressionTree);
+            return await query.SingleOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<TEntity>> FindAll(bool asNoTracking = true)
+        public virtual async ValueTask<TEntity> FirstOrDefault(Expression<Func<TEntity, bool>> predicate, bool asNoTracking = true)
+        {
+            var query = GetFindAllQueryable(predicate, asNoTracking);
+
+            return await query.FirstOrDefaultAsync();
+        }
+
+
+        public virtual async Task<IEnumerable<TEntity>> FindAll(bool asNoTracking = true)
         {
             var query = GetFindAllQueryable(asNoTracking);
 
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate,
+        public virtual async Task<IEnumerable<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate,
             bool asNoTracking = true)
         {
             var query = GetFindAllQueryable(predicate, asNoTracking);
@@ -79,7 +87,7 @@ namespace VRZ.EntityRepository
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<TEntity>> FindAllIncluding(bool asNoTracking = true,
+        public virtual async Task<IEnumerable<TEntity>> FindAllIncluding(bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties)
         {
             var query = GetFindAllIncludingQueryable(asNoTracking, includeProperties);
@@ -87,7 +95,7 @@ namespace VRZ.EntityRepository
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<TEntity>> FindAllIncluding(Expression<Func<TEntity, bool>> predicate,
+        public virtual async Task<IEnumerable<TEntity>> FindAllIncluding(Expression<Func<TEntity, bool>> predicate,
             bool asNoTracking = true, params Expression<Func<TEntity, object>>[] includeProperties)
         {
             var query = GetFindAllIncludingQueryable(predicate, asNoTracking, includeProperties);
@@ -95,31 +103,30 @@ namespace VRZ.EntityRepository
             return await query.ToListAsync();
         }
 
-        public async ValueTask<TEntity> FirstOrDefault(Expression<Func<TEntity, bool>> predicate,
-            bool asNoTracking = true)
+        #region Helpers
+
+        public virtual IQueryable<TEntity> OrderQuery(IQueryable<TEntity> query)
         {
-            var query = GetFindAllQueryable(asNoTracking);
-
-            return await query.FirstOrDefaultAsync(predicate);
-        }
-
-        #region Protected helpers
-
-        protected IQueryable<TEntity> GetFindAllQueryable(bool asNoTracking)
-        {
-            return asNoTracking
-                ? Context.Set<TEntity>().AsNoTracking()
-                : Context.Set<TEntity>();
-        }
-
-        protected IQueryable<TEntity> GetFindAllQueryable(Expression<Func<TEntity, bool>> predicate, bool asNoTracking)
-        {
-            var query = GetFindAllQueryable(asNoTracking)
-                .Where(predicate);
             return query;
         }
 
-        protected IQueryable<TEntity> GetFindAllIncludingQueryable(bool asNoTracking, Expression<Func<TEntity, object>>[] includeProperties)
+        public virtual IQueryable<TEntity> GetFindAllQueryable(bool asNoTracking = true)
+        {
+            var query = asNoTracking
+                ? Context.Set<TEntity>().AsNoTracking()
+                : Context.Set<TEntity>();
+
+            return OrderQuery(query);
+        }
+
+        public virtual IQueryable<TEntity> GetFindAllQueryable(Expression<Func<TEntity, bool>> predicate,
+            bool asNoTracking = true)
+        {
+            return GetFindAllQueryable(asNoTracking).Where(predicate);
+        }
+
+        public virtual IQueryable<TEntity> GetFindAllIncludingQueryable(bool asNoTracking = true,
+            params Expression<Func<TEntity, object>>[] includeProperties)
         {
             var query = GetFindAllQueryable(asNoTracking);
 
@@ -129,13 +136,10 @@ namespace VRZ.EntityRepository
             return query;
         }
 
-        protected IQueryable<TEntity> GetFindAllIncludingQueryable(Expression<Func<TEntity, bool>> predicate, bool asNoTracking,
-            Expression<Func<TEntity, object>>[] includeProperties)
+        public virtual IQueryable<TEntity> GetFindAllIncludingQueryable(Expression<Func<TEntity, bool>> predicate,
+            bool asNoTracking = true, params Expression<Func<TEntity, object>>[] includeProperties)
         {
-            var query = GetFindAllIncludingQueryable(asNoTracking, includeProperties);
-
-            query = query.Where(predicate);
-            return query;
+            return GetFindAllIncludingQueryable(asNoTracking, includeProperties).Where(predicate);
         }
 
         #endregion
@@ -200,7 +204,7 @@ namespace VRZ.EntityRepository
 
         #region Utilities
 
-        public string GetPrimaryKeyNameAndType(out Type primaryKeyType)
+        public virtual string GetPrimaryKeyNameAndType(out Type primaryKeyType)
         {
             var entityType = Context.Model.FindEntityType(typeof(TEntity));
 
@@ -219,7 +223,7 @@ namespace VRZ.EntityRepository
             return (TKey)entity.GetType().GetProperty(primaryKeyName)?.GetValue(entity, null);
         }
 
-        public Expression<Func<TEntity, bool>> GetKeyEqualsExpression([DisallowNull] TKey key)
+        public virtual Expression<Func<TEntity, bool>> GetKeyEqualsExpression([DisallowNull] TKey key)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));

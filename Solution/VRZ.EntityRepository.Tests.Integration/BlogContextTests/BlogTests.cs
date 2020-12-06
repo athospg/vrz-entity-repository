@@ -89,7 +89,7 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 
             // Assert
             Assert.Equal(3, blog.Tags.Count);
-            Assert.Equal(21, blog.Posts.Count);
+            Assert.Equal(29, blog.Posts.Count);
         }
 
         [Fact]
@@ -128,6 +128,18 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 
             // Assert
             Assert.Equal(4, blogs.Count());
+        }
+
+        [Fact]
+        public async Task Get_Blogs_Including()
+        {
+            // Arrange
+
+            // Act
+            var blogs = (await _blogsRepository.FindAllIncluding(true, x => x.Posts)).ToArray();
+
+            // Assert
+            Assert.Equal(new[] { 29, 20, 16, 10 }, blogs.Select(x => x.Posts.Count).ToList());
         }
 
         [Fact]
@@ -178,7 +190,7 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
             var modifiedBlog = await blogsRepository.Find(1);
 
             Assert.NotNull(updatedBlog);
-            Assert.Equal("A1 Modified", modifiedBlog.Name);
+            Assert.Equal("A01 Modified", modifiedBlog.Name);
         }
 
         [Fact]
@@ -223,7 +235,7 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 
             Assert.NotNull(updatedBlog);
             Assert.Equal(4, modifiedBlog.Tags.Count);
-            Assert.Contains("T1", modifiedBlog.Tags.Select(x => x.Name));
+            Assert.Contains("T01", modifiedBlog.Tags.Select(x => x.Name));
             Assert.Equal(Utilities.Utilities.TagsCount, tags.Count());
         }
 
@@ -236,7 +248,7 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
             var tagRepository = new EntityRepository<Tag>(context);
 
             var blog = await blogsRepository.Find(1);
-            var tag = blog.Tags.FirstOrDefault(x => x.Name == "T5");
+            var tag = blog.Tags.FirstOrDefault(x => x.Name == "T05");
 
             // Act
             blog.Tags.Remove(tag);
@@ -244,11 +256,11 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 
             // Assert
             var modifiedBlog = await blogsRepository.Find(1);
-            var tagT5 = await tagRepository.FirstOrDefault(x => x.Name == "T5");
+            var tagT5 = await tagRepository.FirstOrDefault(x => x.Name == "T05");
 
             Assert.NotNull(updatedBlog);
             Assert.Equal(2, modifiedBlog.Tags.Count);
-            Assert.DoesNotContain("T5", modifiedBlog.Tags.Select(x => x.Name));
+            Assert.DoesNotContain("T05", modifiedBlog.Tags.Select(x => x.Name));
             Assert.NotNull(tagT5);
         }
     }
