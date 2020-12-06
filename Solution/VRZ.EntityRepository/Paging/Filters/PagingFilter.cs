@@ -18,7 +18,11 @@ namespace VRZ.EntityRepository.Paging.Filters
         public virtual int PageSize
         {
             get => _pageSize;
-            set => _pageSize = MaxPageSize.HasValue && value > MaxPageSize ? MaxPageSize.Value : value;
+            set => _pageSize = MaxPageSize.HasValue && value > MaxPageSize
+                ? MaxPageSize.Value
+                : value > 0
+                    ? value
+                    : _pageSize;
         }
 
 
@@ -27,7 +31,11 @@ namespace VRZ.EntityRepository.Paging.Filters
         public virtual int? MaxPageSize
         {
             get => _maxPageSize;
-            set => _maxPageSize = value.HasValue && value > 0 ? value : _maxPageSize;
+            set
+            {
+                _maxPageSize = value.HasValue && value > 0 ? value : _maxPageSize;
+                PageSize = _pageSize;
+            }
         }
     }
 }

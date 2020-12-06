@@ -64,6 +64,74 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
         }
 
         [Fact]
+        public async Task Get_Posts_PageSize_Negative()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageSize = -5,
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.Equal(10, posts.PageSize);
+        }
+
+        [Fact]
+        public async Task Get_Posts_MaxPageSize()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageSize = 23,
+                MaxPageSize = 15,
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.Equal(15, posts.PageSize);
+        }
+
+        [Fact]
+        public async Task Get_Posts_MaxPageSize_Negative()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageSize = 23,
+                MaxPageSize = -5,
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.Equal(23, posts.PageSize);
+        }
+
+        [Fact]
+        public async Task Get_Posts_MaxPageSize_NegativeAfterPositive()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageSize = 23,
+                MaxPageSize = 15,
+            };
+
+            // Act
+            filter.MaxPageSize = -5;
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.Equal(15, posts.PageSize);
+        }
+
+        [Fact]
         public async Task Get_Posts_TotalPagesCount()
         {
             // Arrange
@@ -115,6 +183,41 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
         }
 
         [Fact]
+        public async Task Get_Posts_PageNumber()
+        {
+            // Arrange
+            const int pageSize = 17;
+            var lastPage = (int)Math.Ceiling(Utilities.Utilities.PostsCount / (double)pageSize);
+            var filter = new PagingFilter
+            {
+                PageSize = pageSize,
+                PageNumber = lastPage - 1,
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.Equal(pageSize, posts.Count);
+        }
+
+        [Fact]
+        public async Task Get_Posts_PageNumber_Negative()
+        {
+            // Arrange
+            var filter = new PagingFilter
+            {
+                PageNumber = -1,
+            };
+
+            // Act
+            var posts = await _postsRepository.FindAll(filter);
+
+            // Assert
+            Assert.Equal(1, posts.CurrentPage);
+        }
+
+        [Fact]
         public async Task Get_Posts_PageNumber_AfterLastPage()
         {
             // Arrange
@@ -133,6 +236,19 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
             Assert.Equal(lastPage + 1, posts.CurrentPage);
         }
 
+
+        [Fact]
+        public async Task Get_Posts_Including()
+        {
+            // Arrange
+            var filter = new PagingFilter();
+
+            // Act
+            var posts = await _postsRepository.FindAllIncluding(filter, true, x => x.Tags);
+
+            // Assert
+            Assert.Contains(posts, x => x.Tags.Count > 0);
+        }
 
         [Fact]
         public async Task Get_Post_Including()
