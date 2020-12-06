@@ -59,21 +59,14 @@ namespace VRZ.EntityRepository
         {
             var expressionTree = GetKeyEqualsExpression(key);
 
-            var query = asNoTracking
-                ? Context.Set<TEntity>().AsNoTracking()
-                : Context.Set<TEntity>();
-
-            query = includeProperties.Aggregate(query,
-                (current, property) => current.Include(property));
+            var query = GetFindAllIncludingQueryable(asNoTracking, includeProperties);
 
             return await query.SingleOrDefaultAsync(expressionTree);
         }
 
         public async Task<IEnumerable<TEntity>> FindAll(bool asNoTracking = true)
         {
-            var query = asNoTracking
-                ? Context.Set<TEntity>().AsNoTracking()
-                : Context.Set<TEntity>();
+            var query = GetFindAllQueryable(asNoTracking);
 
             return await query.ToListAsync();
         }
@@ -81,24 +74,15 @@ namespace VRZ.EntityRepository
         public async Task<IEnumerable<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate,
             bool asNoTracking = true)
         {
-            var query = asNoTracking
-                ? Context.Set<TEntity>().AsNoTracking()
-                : Context.Set<TEntity>();
+            var query = GetFindAllQueryable(predicate, asNoTracking);
 
-            return await query
-                .Where(predicate)
-                .ToListAsync();
+            return await query.ToListAsync();
         }
 
         public async Task<IEnumerable<TEntity>> FindAllIncluding(bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties)
         {
-            var query = asNoTracking
-                ? Context.Set<TEntity>().AsNoTracking()
-                : Context.Set<TEntity>();
-
-            query = includeProperties.Aggregate(query,
-                (current, property) => current.Include(property));
+            var query = GetFindAllIncludingQueryable(asNoTracking, includeProperties);
 
             return await query.ToListAsync();
         }
@@ -106,14 +90,7 @@ namespace VRZ.EntityRepository
         public async Task<IEnumerable<TEntity>> FindAllIncluding(Expression<Func<TEntity, bool>> predicate,
             bool asNoTracking = true, params Expression<Func<TEntity, object>>[] includeProperties)
         {
-            var query = asNoTracking
-                ? Context.Set<TEntity>().AsNoTracking()
-                : Context.Set<TEntity>();
-
-            query = query.Where(predicate);
-
-            query = includeProperties.Aggregate(query,
-                (current, property) => current.Include(property));
+            var query = GetFindAllIncludingQueryable(predicate, asNoTracking, includeProperties);
 
             return await query.ToListAsync();
         }
@@ -121,12 +98,47 @@ namespace VRZ.EntityRepository
         public async ValueTask<TEntity> FirstOrDefault(Expression<Func<TEntity, bool>> predicate,
             bool asNoTracking = true)
         {
-            var query = asNoTracking
-                ? Context.Set<TEntity>().AsNoTracking()
-                : Context.Set<TEntity>();
+            var query = GetFindAllQueryable(asNoTracking);
 
             return await query.FirstOrDefaultAsync(predicate);
         }
+
+        #region Protected helpers
+
+        protected IQueryable<TEntity> GetFindAllQueryable(bool asNoTracking)
+        {
+            return asNoTracking
+                ? Context.Set<TEntity>().AsNoTracking()
+                : Context.Set<TEntity>();
+        }
+
+        protected IQueryable<TEntity> GetFindAllQueryable(Expression<Func<TEntity, bool>> predicate, bool asNoTracking)
+        {
+            var query = GetFindAllQueryable(asNoTracking)
+                .Where(predicate);
+            return query;
+        }
+
+        protected IQueryable<TEntity> GetFindAllIncludingQueryable(bool asNoTracking, Expression<Func<TEntity, object>>[] includeProperties)
+        {
+            var query = GetFindAllQueryable(asNoTracking);
+
+            query = includeProperties.Aggregate(query,
+                (current, property) => current.Include(property));
+
+            return query;
+        }
+
+        protected IQueryable<TEntity> GetFindAllIncludingQueryable(Expression<Func<TEntity, bool>> predicate, bool asNoTracking,
+            Expression<Func<TEntity, object>>[] includeProperties)
+        {
+            var query = GetFindAllIncludingQueryable(asNoTracking, includeProperties);
+
+            query = query.Where(predicate);
+            return query;
+        }
+
+        #endregion
 
         #endregion
 
