@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace VRZ.EntityRepository.SDK.EntityRepository
+namespace VRZ.EntityRepository
 {
-    public interface IEntityRepository<in TKey, TEntity>
+    public interface IEntityRepository<TKey, TEntity>
         where TKey : IComparable<TKey>
-        where TEntity : class
+        where TEntity : class, new()
     {
         #region Read Methods
 
@@ -15,8 +16,8 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
         ValueTask<long> CountAll();
         ValueTask<long> CountWhere(Expression<Func<TEntity, bool>> predicate);
 
-        ValueTask<TEntity> Find(TKey key);
-        ValueTask<TEntity> FindIncluding(TKey key, bool asNoTracking = true,
+        ValueTask<TEntity> Find([DisallowNull] TKey key);
+        ValueTask<TEntity> FindIncluding([DisallowNull] TKey key, bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties);
         ValueTask<TEntity> FirstOrDefault(Expression<Func<TEntity, bool>> predicate, bool asNoTracking = true);
 
@@ -31,12 +32,22 @@ namespace VRZ.EntityRepository.SDK.EntityRepository
 
         #region Write Methods
 
-        Task<TEntity> Add(TEntity entity);
+        Task<TEntity> Add([DisallowNull] TEntity entity);
         Task<IEnumerable<TEntity>> Add(IEnumerable<TEntity> entities);
-        Task<int> Update(TEntity entity);
-        Task<int> Update(IEnumerable<TEntity> entity);
-        Task<int> Remove(TEntity entity);
-        Task<int> Remove(TKey key);
+        Task<TEntity> Update([DisallowNull] TEntity entity);
+        Task<IEnumerable<TEntity>> Update(IEnumerable<TEntity> entity);
+        Task<TEntity> Remove(TEntity entity);
+        Task<TEntity> Remove([DisallowNull] TKey key);
+
+        #endregion
+
+        #region Utilities
+
+        string GetPrimaryKeyNameAndType(out Type primaryKeyType);
+
+        TKey GetPrimaryKeyValue([DisallowNull] TEntity entity);
+
+        Expression<Func<TEntity, bool>> GetKeyEqualsExpression([DisallowNull] TKey key);
 
         #endregion
     }

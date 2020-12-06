@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<coverage version="1.0" date="2020-10-03_15-01-11" tag="">
+  <assembly name="VRZ.EntityRepository">
+    <class name="VRZ.EntityRepository.EntityRepository`3" coveredlines="130" coverablelines="189" totallines="261" coveredbranches="32" totalbranches="90" />
+  </assembly>
+</coverage>

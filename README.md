@@ -3,6 +3,7 @@
 Generic Entity Repository pattern.
 
 ![.NET 5 Tests](https://github.com/athospg/vrz-entity-repository/workflows/.NET%205%20Tests/badge.svg)
+![Nuget Publish](https://github.com/athospg/vrz-entity-repository/workflows/Nuget%20Publish/badge.svg)
 
 ## Getting Started
 

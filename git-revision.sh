@@ -24,11 +24,11 @@ else
     $dev_branch)
       version=${major}.${minor}.$((patch+1))
       ;;
-    "feature/*")
-      version=${latest}-${branch}-${increment}
+    feature/*)
+      version=${latest}-${branch:8}-${increment}
       ;;
     *)
-      >&2 echo "unsupported branch type"
+      >&2 echo "unsupported branch type '${branch}'"
       exit 1
       ;;
   esac
