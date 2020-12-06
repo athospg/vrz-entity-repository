@@ -18,22 +18,22 @@ namespace VRZ.EntityRepository.Paging
         }
 
 
-        public async Task<PagedList<TEntity>> FindAll(IPagingFilter filter, bool asNoTracking = true)
+        public virtual async Task<PagedList<TEntity>> FindAll(IPagingFilter filter, bool asNoTracking = true)
         {
             var query = GetFindAllQueryable(asNoTracking);
 
             return await query.Paginate(filter);
         }
 
-        public async Task<PagedList<TEntity>> FindAll(IPagingFilter filter, Expression<Func<TEntity, bool>> predicate,
-            bool asNoTracking = true)
+        public virtual async Task<PagedList<TEntity>> FindAll(IPagingFilter filter,
+            Expression<Func<TEntity, bool>> predicate, bool asNoTracking = true)
         {
             var query = GetFindAllQueryable(predicate, asNoTracking);
 
             return await query.Paginate(filter);
         }
 
-        public async Task<PagedList<TEntity>> FindAllIncluding(IPagingFilter filter, bool asNoTracking = true,
+        public virtual async Task<PagedList<TEntity>> FindAllIncluding(IPagingFilter filter, bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties)
         {
             var query = GetFindAllIncludingQueryable(asNoTracking, includeProperties);
@@ -41,8 +41,9 @@ namespace VRZ.EntityRepository.Paging
             return await query.Paginate(filter);
         }
 
-        public async Task<PagedList<TEntity>> FindAllIncluding(IPagingFilter filter, Expression<Func<TEntity, bool>> predicate,
-            bool asNoTracking = true, params Expression<Func<TEntity, object>>[] includeProperties)
+        public virtual async Task<PagedList<TEntity>> FindAllIncluding(IPagingFilter filter,
+            Expression<Func<TEntity, bool>> predicate, bool asNoTracking = true,
+            params Expression<Func<TEntity, object>>[] includeProperties)
         {
             var query = GetFindAllIncludingQueryable(predicate, asNoTracking, includeProperties);
 

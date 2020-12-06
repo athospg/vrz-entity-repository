@@ -10,12 +10,12 @@ using Xunit;
 
 namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
 {
-    public class GetPagedPostTests
+    public class GetPagedPostsTests
     {
         private readonly BlogContext _context;
         private readonly IEntityPagingRepository<long, Post> _postsRepository;
 
-        public GetPagedPostTests()
+        public GetPagedPostsTests()
         {
             _context = new BlogContext();
 
@@ -28,7 +28,7 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests
             _postsRepository = new EntityPagingRepository<Post>(_context);
         }
 
-        ~GetPagedPostTests()
+        ~GetPagedPostsTests()
         {
             _context.Dispose();
         }

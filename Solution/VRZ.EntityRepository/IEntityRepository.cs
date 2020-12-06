@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -13,30 +14,60 @@ namespace VRZ.EntityRepository
         #region Read Methods
 
         ValueTask<bool> Any(Expression<Func<TEntity, bool>> predicate);
+
         ValueTask<long> CountAll();
+
         ValueTask<long> CountWhere(Expression<Func<TEntity, bool>> predicate);
 
         ValueTask<TEntity> Find([DisallowNull] TKey key);
+
         ValueTask<TEntity> FindIncluding([DisallowNull] TKey key, bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties);
+
         ValueTask<TEntity> FirstOrDefault(Expression<Func<TEntity, bool>> predicate, bool asNoTracking = true);
 
         Task<IEnumerable<TEntity>> FindAll(bool asNoTracking = true);
+
         Task<IEnumerable<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate, bool asNoTracking = true);
+
         Task<IEnumerable<TEntity>> FindAllIncluding(bool asNoTracking = true,
             params Expression<Func<TEntity, object>>[] includeProperties);
+
         Task<IEnumerable<TEntity>> FindAllIncluding(Expression<Func<TEntity, bool>> predicate,
             bool asNoTracking = true, params Expression<Func<TEntity, object>>[] includeProperties);
+
+        #region Helpers
+
+        IQueryable<TEntity> OrderQuery(IQueryable<TEntity> query);
+
+        IQueryable<TEntity> GetFindAllQueryable(bool asNoTracking = true);
+
+        IQueryable<TEntity> GetFindAllQueryable(Expression<Func<TEntity, bool>> predicate,
+            bool asNoTracking = true);
+
+        IQueryable<TEntity> GetFindAllIncludingQueryable(bool asNoTracking = true,
+            params Expression<Func<TEntity, object>>[] includeProperties);
+
+        IQueryable<TEntity> GetFindAllIncludingQueryable(Expression<Func<TEntity, bool>> predicate,
+            bool asNoTracking = true,
+            params Expression<Func<TEntity, object>>[] includeProperties);
+
+        #endregion
 
         #endregion
 
         #region Write Methods
 
         Task<TEntity> Add([DisallowNull] TEntity entity);
+
         Task<IEnumerable<TEntity>> Add(IEnumerable<TEntity> entities);
+
         Task<TEntity> Update([DisallowNull] TEntity entity);
+
         Task<IEnumerable<TEntity>> Update(IEnumerable<TEntity> entity);
+
         Task<TEntity> Remove(TEntity entity);
+
         Task<TEntity> Remove([DisallowNull] TKey key);
 
         #endregion
