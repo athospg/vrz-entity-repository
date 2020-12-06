@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using VRZ.EntityRepository.Paging.Filters;
-using VRZ.EntityRepository.SDK.Extensions;
+using VRZ.Infrastructure.Extensions;
 
 namespace VRZ.EntityRepository.Paging
 {
