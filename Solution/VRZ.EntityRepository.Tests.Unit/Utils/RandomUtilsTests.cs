@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using VRZ.EntityRepository.SDK.Utils;
+using VRZ.Infrastructure.Utils;
 using Xunit;
 
 namespace VRZ.EntityRepository.Tests.Unit.Utils

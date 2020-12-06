@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VRZ.EntityRepository.SDK.Utils;
 using VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities.Models;
+using VRZ.Infrastructure.Utils;
 
 namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities
 {
