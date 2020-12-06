@@ -37,5 +37,10 @@ namespace VRZ.EntityRepository.Paging.Filters
                 PageSize = _pageSize;
             }
         }
+
+
+        public string OrderBy { get; set; }
+
+        public bool Ascending { get; set; } = true;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using VRZ.EntityRepository.SDK.Utils;
 using VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities.Models;
 
 namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities
@@ -46,7 +47,7 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities
                 values.Add(new Tag
                 {
                     Id = i,
-                    Name = $"T{i}",
+                    Name = $"T{i:D2}",
                 });
             }
 
@@ -62,7 +63,7 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities
                 values.Add(new Blog
                 {
                     Id = i,
-                    Name = $"A{i}",
+                    Name = $"A{i:D2}",
                     Tags = GetRandomItems(allTags, rand),
                 });
             }
@@ -73,18 +74,27 @@ namespace VRZ.EntityRepository.Tests.Integration.BlogContextTests.Utilities
         private static IEnumerable<Post> GetSeedingPosts(IReadOnlyCollection<Tag> allTags)
         {
             var rand = new Random(0);
-            var initialData = DateTimeOffset.Now.AddDays(-15);
             var values = new List<Post>();
-            for (var i = 1; i <= PostsCount; i++)
+
+            var postId = 1;
+            var initialData = new DateTime(2020, 1, 1);
+
+            var blogsPostCount = RandomUtils.RandomSplitCounts(BlogsCount, PostsCount, 7).ToList();
+            for (var i = 1; i <= BlogsCount; i++)
             {
-                values.Add(new Post
+                var postsCount = blogsPostCount[i - 1];
+
+                for (var j = 1; j <= postsCount; j++)
                 {
-                    Id = i,
-                    Date = initialData.AddHours(i),
-                    Name = $"Post {i}",
-                    Tags = GetRandomItems(allTags, rand),
-                    BlogId = rand.Next(1, BlogsCount + 1),
-                });
+                    values.Add(new Post
+                    {
+                        Id = postId++,
+                        Date = initialData.AddHours(j),
+                        Name = $"Blog {i:D2} Post {j:D2}",
+                        Tags = GetRandomItems(allTags, rand),
+                        BlogId = i,
+                    });
+                }
             }
 
             return values;

@@ -1,17 +1,25 @@
-﻿using System.Linq;
+﻿using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using VRZ.EntityRepository.Paging.Filters;
+using VRZ.EntityRepository.SDK.Extensions;
 
 namespace VRZ.EntityRepository.Paging
 {
     public static class PaginateExtensions
     {
-        public static async Task<PagedList<T>> Paginate<T>(this IQueryable<T> source, IPagingFilter filter)
+        public static async Task<PagedList<T>> Paginate<T>(this IQueryable<T> query, IPagingFilter filter)
         {
-            var count = await source.CountAsync();
+            var count = await query.CountAsync();
 
-            var items = await source
+            if (!string.IsNullOrWhiteSpace(filter.OrderBy))
+            {
+                var direction = filter.Ascending ? ListSortDirection.Ascending : ListSortDirection.Descending;
+                query = query.Order(filter.OrderBy, direction);
+            }
+
+            var items = await query
                 .Skip((filter.PageNumber - 1) * filter.PageSize)
                 .Take(filter.PageSize)
                 .ToListAsync();

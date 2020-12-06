@@ -11,5 +11,10 @@ namespace VRZ.EntityRepository.Paging.Filters
         [JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
         public int? MaxPageSize { get; set; }
+
+
+        public string OrderBy { get; set; }
+
+        public bool Ascending { get; set; }
     }
 }

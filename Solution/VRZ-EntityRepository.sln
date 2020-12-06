@@ -20,7 +20,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VRZ.EntityRepository.Tests.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VRZ.EntityRepository.Tests.Integration", "VRZ.EntityRepository.Tests.Integration\VRZ.EntityRepository.Tests.Integration.csproj", "{FBCBB378-BB8E-4A98-B024-8633F3D595FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRZ.EntityRepository", "VRZ.EntityRepository\VRZ.EntityRepository.csproj", "{C003F2C4-AA4C-4468-B06C-18E2887A48F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VRZ.EntityRepository", "VRZ.EntityRepository\VRZ.EntityRepository.csproj", "{C003F2C4-AA4C-4468-B06C-18E2887A48F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRZ.EntityRepository.SDK", "VRZ.EntityRepository.SDK\VRZ.EntityRepository.SDK.csproj", "{BAC65660-F211-42D8-904E-9A49CF1039B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,6 +42,10 @@ Global
 		{C003F2C4-AA4C-4468-B06C-18E2887A48F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C003F2C4-AA4C-4468-B06C-18E2887A48F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C003F2C4-AA4C-4468-B06C-18E2887A48F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAC65660-F211-42D8-904E-9A49CF1039B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAC65660-F211-42D8-904E-9A49CF1039B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAC65660-F211-42D8-904E-9A49CF1039B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAC65660-F211-42D8-904E-9A49CF1039B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
