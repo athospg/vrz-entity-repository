@@ -27,7 +27,6 @@ namespace VRZ.EntityRepository.Paging.Filters
 
 
         [JsonIgnore]
-        [Newtonsoft.Json.JsonIgnore]
         public virtual int? MaxPageSize
         {
             get => _maxPageSize;
