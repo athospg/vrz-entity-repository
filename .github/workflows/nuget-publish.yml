@@ -1,4 +1,4 @@
-name: Nuget Publish
+name: nuget publish
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 6.0.100-preview.7.21379.14
+          dotnet-version: 6.0.100
 
       - name: Set tag version
         id: tag
@@ -40,7 +40,7 @@ jobs:
       - name: Create Release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           release_name: Release ${{ steps.tag.outputs.tag }}
